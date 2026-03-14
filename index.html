@@ -4,10 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IFC Material Demo</title>
+    <meta
+      name="description"
+      content="Premium IFC materials demo for stock visibility, procurement risk, and cost coverage."
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="page-shell">
+      <nav class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark">IFC</span>
+          <div>
+            <p class="brand-name">Revit IFC Materials</p>
+            <p class="brand-tag">Warehouse visibility and cost intelligence</p>
+          </div>
+        </div>
+        <div class="topbar-note">Static demo powered by a real IFC report</div>
+      </nav>
+
       <header class="hero">
         <div class="hero-copy">
           <p class="eyebrow">IFC Material Intelligence Demo</p>
@@ -26,6 +41,11 @@
             </label>
             <input id="report-upload" type="file" accept=".json,application/json" />
           </div>
+          <div class="trust-row">
+            <div class="trust-pill">IfcOpenShell-backed report generation</div>
+            <div class="trust-pill">Warehouse + vendor mapping</div>
+            <div class="trust-pill">Instant shortage costing</div>
+          </div>
         </div>
 
         <aside class="hero-panel">
@@ -36,6 +56,10 @@
             <li>Match against warehouse and vendor inventory.</li>
             <li>Return availability, shortages, and costing.</li>
           </ol>
+          <div class="panel-callout">
+            This version is optimized for showcasing the business outcome:
+            faster material decisions from exported IFC data.
+          </div>
         </aside>
       </header>
 

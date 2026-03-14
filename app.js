@@ -1,4 +1,4 @@
-const SAMPLE_REPORT_PATH = "public/data/report.json";
+const SAMPLE_REPORT_PATH = "/public/data/report.json";
 
 const currencyFormatterCache = new Map();
 const app = document.querySelector("#app");
@@ -43,6 +43,17 @@ function coverageRatio(row) {
     return 0;
   }
   return Math.max(0, Math.min(100, (covered / required) * 100));
+}
+
+function overallCoverage(summary) {
+  const available = Number(summary.available_count || 0);
+  const partial = Number(summary.partial_count || 0);
+  const unavailable = Number(summary.unavailable_count || 0);
+  const total = available + partial + unavailable;
+  if (!total) {
+    return 0;
+  }
+  return Math.round(((available + partial * 0.5) / total) * 100);
 }
 
 function createMetricCard(label, value, footnote) {
@@ -134,8 +145,32 @@ function createMaterialSection(title, subtitle, rows, status, currency) {
 function renderReport(report) {
   const summary = report.summary || {};
   const currency = report.currency || "INR";
+  const readiness = overallCoverage(summary);
 
   app.innerHTML = "";
+
+  const spotlight = document.createElement("section");
+  spotlight.className = "spotlight-card";
+  spotlight.innerHTML = `
+    <div class="spotlight-copy">
+      <p class="section-kicker">Executive Snapshot</p>
+      <h2 class="spotlight-title">${readiness >= 80 ? "High readiness" : readiness >= 50 ? "Action needed" : "Procurement risk is elevated"}</h2>
+      <p class="section-subtitle">
+        This IFC export is currently ${readiness}% execution-ready based on covered stock,
+        partial coverage, and immediate shortages across mapped materials.
+      </p>
+    </div>
+    <div class="spotlight-metrics">
+      <div class="spotlight-ring">
+        <span>${readiness}%</span>
+      </div>
+      <div class="spotlight-list">
+        <div><span>Covered cost</span><strong>${formatCurrency(summary.total_available_cost, currency)}</strong></div>
+        <div><span>Shortage value</span><strong>${formatCurrency(summary.total_shortage_cost, currency)}</strong></div>
+        <div><span>Decision signal</span><strong>${summary.unavailable_count > 0 ? "Buy / source now" : "Ready to execute"}</strong></div>
+      </div>
+    </div>
+  `;
 
   const projectStrip = document.createElement("section");
   projectStrip.className = "project-strip";
@@ -202,7 +237,7 @@ function renderReport(report) {
     ),
   );
 
-  app.append(projectStrip, metrics, materialsLayout);
+  app.append(spotlight, projectStrip, metrics, materialsLayout);
 }
 
 function renderError(message) {
