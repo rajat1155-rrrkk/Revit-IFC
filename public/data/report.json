@@ -1,0 +1,112 @@
+{
+  "ifc_file": "IFC 4.3.2.0 (IFC4X3_ADD2)/PCERT-Sample-Scene/Building-Architecture.ifc",
+  "inventory_file": "data/material_inventory.csv",
+  "parser_used": "ifcopenshell",
+  "currency": "INR",
+  "summary": {
+    "materials_found": 6,
+    "available_count": 3,
+    "partial_count": 1,
+    "unavailable_count": 2,
+    "total_available_cost": 78956.25,
+    "total_shortage_cost": 245400.0
+  },
+  "available_materials": [
+    {
+      "ifc_name": "bulk-material_sand-coarse_generic",
+      "mapped_to": "bulk-material_sand-coarse_generic",
+      "required_quantity": 1.0,
+      "available_quantity": 2.0,
+      "covered_quantity": 1.0,
+      "shortage_quantity": 0.0,
+      "unit": "count",
+      "unit_cost": 2500.0,
+      "available_cost": 2500.0,
+      "shortage_cost": 0.0,
+      "source_type": "warehouse",
+      "vendor": "Internal Stock",
+      "related_objects": 1
+    },
+    {
+      "ifc_name": "concrete_reinforced_in-situ",
+      "mapped_to": "concrete_reinforced_in-situ",
+      "required_quantity": 6.438,
+      "available_quantity": 8.0,
+      "covered_quantity": 6.438,
+      "shortage_quantity": 0.0,
+      "unit": "m3",
+      "unit_cost": 9500.0,
+      "available_cost": 61156.25,
+      "shortage_cost": 0.0,
+      "source_type": "warehouse",
+      "vendor": "Internal Stock",
+      "related_objects": 1
+    },
+    {
+      "ifc_name": "wood_mdf_plate",
+      "mapped_to": "wood_mdf_plate",
+      "required_quantity": 1.0,
+      "available_quantity": 4.0,
+      "covered_quantity": 1.0,
+      "shortage_quantity": 0.0,
+      "unit": "count",
+      "unit_cost": 1800.0,
+      "available_cost": 1800.0,
+      "shortage_cost": 0.0,
+      "source_type": "warehouse",
+      "vendor": "Internal Stock",
+      "related_objects": 1
+    }
+  ],
+  "partial_materials": [
+    {
+      "ifc_name": "stone_sand-lime",
+      "mapped_to": "stone_sand-lime",
+      "required_quantity": 4.0,
+      "available_quantity": 3.0,
+      "covered_quantity": 3.0,
+      "shortage_quantity": 1.0,
+      "unit": "count",
+      "unit_cost": 4500.0,
+      "available_cost": 13500.0,
+      "shortage_cost": 4500.0,
+      "source_type": "warehouse",
+      "vendor": "Internal Stock",
+      "related_objects": 4
+    }
+  ],
+  "unavailable_materials": [
+    {
+      "ifc_name": "composite_element_roof",
+      "mapped_to": "composite_element_roof",
+      "required_quantity": 2.0,
+      "available_quantity": 0.0,
+      "covered_quantity": 0.0,
+      "shortage_quantity": 2.0,
+      "unit": "count",
+      "unit_cost": 120000.0,
+      "available_cost": 0.0,
+      "shortage_cost": 240000.0,
+      "source_type": "vendor",
+      "vendor": "Vendor B",
+      "related_objects": 2,
+      "reason": "Mapped material has zero stock"
+    },
+    {
+      "ifc_name": "gypsum_fiber-board_panel",
+      "mapped_to": "gypsum_fiber-board_panel",
+      "required_quantity": 1.0,
+      "available_quantity": 0.0,
+      "covered_quantity": 0.0,
+      "shortage_quantity": 1.0,
+      "unit": "count",
+      "unit_cost": 900.0,
+      "available_cost": 0.0,
+      "shortage_cost": 900.0,
+      "source_type": "vendor",
+      "vendor": "Vendor A",
+      "related_objects": 1,
+      "reason": "Mapped material has zero stock"
+    }
+  ]
+}

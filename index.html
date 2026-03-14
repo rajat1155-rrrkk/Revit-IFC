@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IFC Material Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">IFC Material Intelligence Demo</p>
+          <h1>From exported IFC to stock visibility and cost impact.</h1>
+          <p class="lead">
+            This showcase turns an IFC export into a procurement snapshot:
+            what is already available, what is short, and what the covered
+            quantity is worth.
+          </p>
+          <div class="hero-actions">
+            <button id="reload-sample" class="primary-button" type="button">
+              Reload sample report
+            </button>
+            <label class="upload-chip" for="report-upload">
+              Load custom report JSON
+            </label>
+            <input id="report-upload" type="file" accept=".json,application/json" />
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <p class="panel-label">Demo flow</p>
+          <ol>
+            <li>Export IFC from Revit or another BIM tool.</li>
+            <li>Parse assigned materials and quantity takeoff data.</li>
+            <li>Match against warehouse and vendor inventory.</li>
+            <li>Return availability, shortages, and costing.</li>
+          </ol>
+        </aside>
+      </header>
+
+      <main id="app" class="dashboard" aria-live="polite">
+        <section class="status-card loading-state">
+          <p>Loading sample report...</p>
+        </section>
+      </main>
+    </div>
+
+    <template id="metric-template">
+      <article class="metric-card">
+        <p class="metric-label"></p>
+        <p class="metric-value"></p>
+        <p class="metric-footnote"></p>
+      </article>
+    </template>
+
+    <template id="material-template">
+      <article class="material-card">
+        <div class="material-header">
+          <div>
+            <p class="material-name"></p>
+            <p class="material-meta"></p>
+          </div>
+          <span class="status-pill"></span>
+        </div>
+        <div class="coverage-track">
+          <span class="coverage-fill"></span>
+        </div>
+        <dl class="material-stats"></dl>
+        <p class="material-reason"></p>
+      </article>
+    </template>
+
+    <script src="app.js" defer></script>
+  </body>
+  </html>
