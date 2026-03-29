@@ -1,60 +1,260 @@
 {
+  "generated_at": "2026-03-29T16:20:00Z",
   "ifc_file": "IFC 4.3.2.0 (IFC4X3_ADD2)/PCERT-Sample-Scene/Building-Architecture.ifc",
   "inventory_file": "data/material_inventory.csv",
   "parser_used": "ifcopenshell",
   "currency": "INR",
+  "account": {
+    "company": "Aurum Build Systems",
+    "workspace_tier": "Signature",
+    "portfolio_name": "North & West India Delivery Desk",
+    "model_health_score": 92,
+    "seat_usage": 18,
+    "active_projects": 4,
+    "connected_warehouses": 3,
+    "managed_spend": 128400000
+  },
+  "project": {
+    "name": "One Marina Residences",
+    "code": "OMR-ARC-07",
+    "stage": "Preconstruction Freeze",
+    "location": "Mumbai",
+    "client": "Meridian Urban",
+    "discipline": "Architecture",
+    "owner": "Ritika Shah",
+    "delivery_window_start": "2026-04-15",
+    "delivery_window_end": "2026-05-12",
+    "ifc_schema": "IFC4X3_ADD2",
+    "revit_source": "Revit 2025"
+  },
   "summary": {
     "materials_found": 6,
     "available_count": 3,
     "partial_count": 1,
     "unavailable_count": 2,
     "total_available_cost": 78956.25,
-    "total_shortage_cost": 245400.0
+    "total_shortage_cost": 245400,
+    "total_required_cost": 324356.25,
+    "readiness_score": 74,
+    "blockers_count": 3,
+    "at_risk_packages": 2,
+    "projected_margin_saved": 980000,
+    "forecast_confidence": 87
   },
+  "portfolio_metrics": [
+    {
+      "label": "Portfolio margin protected",
+      "value": "INR 9.8L",
+      "delta": "+6.2% month-on-month",
+      "tone": "positive",
+      "note": "Recovered through early material intervention and package reallocation."
+    },
+    {
+      "label": "Supplier concentration",
+      "value": "34%",
+      "delta": "Within approved tolerance",
+      "tone": "neutral",
+      "note": "Current risk is concentrated in facade and roof assemblies."
+    },
+    {
+      "label": "Late package exposure",
+      "value": "INR 24.5L",
+      "delta": "-11% vs last review",
+      "tone": "positive",
+      "note": "Two interior packages moved from blocked to watchlist this week."
+    }
+  ],
+  "sites": [
+    {
+      "name": "One Marina Residences",
+      "location": "Mumbai",
+      "phase": "Architecture issue set",
+      "coverage": 74,
+      "shortage_value": 245400,
+      "packages_at_risk": 2,
+      "status": "Active"
+    },
+    {
+      "name": "Crest Tech Campus",
+      "location": "Bengaluru",
+      "phase": "MEP coordination",
+      "coverage": 89,
+      "shortage_value": 118000,
+      "packages_at_risk": 1,
+      "status": "Stable"
+    },
+    {
+      "name": "Harbor Square Hotel",
+      "location": "Goa",
+      "phase": "Interior fitout",
+      "coverage": 67,
+      "shortage_value": 512000,
+      "packages_at_risk": 4,
+      "status": "Watchlist"
+    }
+  ],
+  "procurement_pipeline": [
+    {
+      "stage": "Ready to release",
+      "count": 8,
+      "value": 18600000,
+      "note": "Commercially cleared and ready for scheduled buyout."
+    },
+    {
+      "stage": "Commercial review",
+      "count": 5,
+      "value": 9400000,
+      "note": "Awaiting rate alignment or alternate source approval."
+    },
+    {
+      "stage": "Blocked",
+      "count": 2,
+      "value": 245400,
+      "note": "Immediate leadership attention required to preserve schedule."
+    }
+  ],
+  "alerts": [
+    {
+      "title": "Roof composite package is fully uncovered",
+      "detail": "Vendor B has not confirmed capacity against the April release window.",
+      "severity": "High",
+      "owner": "Procurement lead",
+      "eta": "Today"
+    },
+    {
+      "title": "Stone sand-lime block is partially covered",
+      "detail": "One package remains short and could slip masonry sequencing by three days.",
+      "severity": "Medium",
+      "owner": "Package manager",
+      "eta": "31 Mar"
+    },
+    {
+      "title": "Interior board alternate source is available",
+      "detail": "Vendor A can be substituted if commercial review closes before Friday.",
+      "severity": "Low",
+      "owner": "Commercial manager",
+      "eta": "1 Apr"
+    }
+  ],
+  "vendors": [
+    {
+      "name": "Vendor B",
+      "category": "Roof systems",
+      "fulfillment_rate": 61,
+      "lead_time_days": 18,
+      "exposure": 240000,
+      "status": "Escalated"
+    },
+    {
+      "name": "Vendor A",
+      "category": "Interior boards",
+      "fulfillment_rate": 83,
+      "lead_time_days": 7,
+      "exposure": 900,
+      "status": "Conditional"
+    },
+    {
+      "name": "Internal Stock",
+      "category": "Warehouse network",
+      "fulfillment_rate": 96,
+      "lead_time_days": 2,
+      "exposure": 0,
+      "status": "Preferred"
+    }
+  ],
+  "activity": [
+    {
+      "time": "15 min ago",
+      "user": "Ritika Shah",
+      "action": "Approved alternate sourcing path",
+      "detail": "Interior board package moved from blocked to conditional vendor review."
+    },
+    {
+      "time": "42 min ago",
+      "user": "Aman Verma",
+      "action": "Uploaded IFC export",
+      "detail": "Architecture package OMR-ARC-07 synced from Revit 2025."
+    },
+    {
+      "time": "1 hr ago",
+      "user": "System",
+      "action": "Warehouse match completed",
+      "detail": "Six mapped materials reconciled against current stock and supplier catalog."
+    }
+  ],
+  "milestones": [
+    {
+      "name": "Facade commercial freeze",
+      "date": "2026-04-02",
+      "status": "Upcoming",
+      "detail": "Target date for final vendor alignment and cashflow lock."
+    },
+    {
+      "name": "Roof package buyout",
+      "date": "2026-04-05",
+      "status": "Critical",
+      "detail": "Needs confirmed vendor capacity to avoid affecting site sequencing."
+    },
+    {
+      "name": "Interior board release",
+      "date": "2026-04-08",
+      "status": "Upcoming",
+      "detail": "Can proceed once alternate source is commercially signed off."
+    }
+  ],
   "available_materials": [
     {
       "ifc_name": "bulk-material_sand-coarse_generic",
       "mapped_to": "bulk-material_sand-coarse_generic",
-      "required_quantity": 1.0,
-      "available_quantity": 2.0,
-      "covered_quantity": 1.0,
-      "shortage_quantity": 0.0,
+      "package": "Site preparation",
+      "zone": "Podium",
+      "required_quantity": 1,
+      "available_quantity": 2,
+      "covered_quantity": 1,
+      "shortage_quantity": 0,
       "unit": "count",
-      "unit_cost": 2500.0,
-      "available_cost": 2500.0,
-      "shortage_cost": 0.0,
+      "unit_cost": 2500,
+      "available_cost": 2500,
+      "shortage_cost": 0,
       "source_type": "warehouse",
       "vendor": "Internal Stock",
+      "lead_time_days": 1,
       "related_objects": 1
     },
     {
       "ifc_name": "concrete_reinforced_in-situ",
       "mapped_to": "concrete_reinforced_in-situ",
+      "package": "Core structure",
+      "zone": "Tower A",
       "required_quantity": 6.438,
-      "available_quantity": 8.0,
+      "available_quantity": 8,
       "covered_quantity": 6.438,
-      "shortage_quantity": 0.0,
+      "shortage_quantity": 0,
       "unit": "m3",
-      "unit_cost": 9500.0,
+      "unit_cost": 9500,
       "available_cost": 61156.25,
-      "shortage_cost": 0.0,
+      "shortage_cost": 0,
       "source_type": "warehouse",
       "vendor": "Internal Stock",
+      "lead_time_days": 2,
       "related_objects": 1
     },
     {
       "ifc_name": "wood_mdf_plate",
       "mapped_to": "wood_mdf_plate",
-      "required_quantity": 1.0,
-      "available_quantity": 4.0,
-      "covered_quantity": 1.0,
-      "shortage_quantity": 0.0,
+      "package": "Joinery",
+      "zone": "Amenity floor",
+      "required_quantity": 1,
+      "available_quantity": 4,
+      "covered_quantity": 1,
+      "shortage_quantity": 0,
       "unit": "count",
-      "unit_cost": 1800.0,
-      "available_cost": 1800.0,
-      "shortage_cost": 0.0,
+      "unit_cost": 1800,
+      "available_cost": 1800,
+      "shortage_cost": 0,
       "source_type": "warehouse",
       "vendor": "Internal Stock",
+      "lead_time_days": 2,
       "related_objects": 1
     }
   ],
@@ -62,51 +262,61 @@
     {
       "ifc_name": "stone_sand-lime",
       "mapped_to": "stone_sand-lime",
-      "required_quantity": 4.0,
-      "available_quantity": 3.0,
-      "covered_quantity": 3.0,
-      "shortage_quantity": 1.0,
+      "package": "Masonry",
+      "zone": "West wing",
+      "required_quantity": 4,
+      "available_quantity": 3,
+      "covered_quantity": 3,
+      "shortage_quantity": 1,
       "unit": "count",
-      "unit_cost": 4500.0,
-      "available_cost": 13500.0,
-      "shortage_cost": 4500.0,
+      "unit_cost": 4500,
+      "available_cost": 13500,
+      "shortage_cost": 4500,
       "source_type": "warehouse",
       "vendor": "Internal Stock",
-      "related_objects": 4
+      "lead_time_days": 4,
+      "related_objects": 4,
+      "reason": "Existing stock covers 75% of demand; one additional lot must be scheduled."
     }
   ],
   "unavailable_materials": [
     {
       "ifc_name": "composite_element_roof",
       "mapped_to": "composite_element_roof",
-      "required_quantity": 2.0,
-      "available_quantity": 0.0,
-      "covered_quantity": 0.0,
-      "shortage_quantity": 2.0,
+      "package": "Roof enclosure",
+      "zone": "Tower crown",
+      "required_quantity": 2,
+      "available_quantity": 0,
+      "covered_quantity": 0,
+      "shortage_quantity": 2,
       "unit": "count",
-      "unit_cost": 120000.0,
-      "available_cost": 0.0,
-      "shortage_cost": 240000.0,
+      "unit_cost": 120000,
+      "available_cost": 0,
+      "shortage_cost": 240000,
       "source_type": "vendor",
       "vendor": "Vendor B",
+      "lead_time_days": 18,
       "related_objects": 2,
-      "reason": "Mapped material has zero stock"
+      "reason": "Mapped package has zero stock and supplier capacity is not confirmed."
     },
     {
       "ifc_name": "gypsum_fiber-board_panel",
       "mapped_to": "gypsum_fiber-board_panel",
-      "required_quantity": 1.0,
-      "available_quantity": 0.0,
-      "covered_quantity": 0.0,
-      "shortage_quantity": 1.0,
+      "package": "Interior drylining",
+      "zone": "Levels 08-11",
+      "required_quantity": 1,
+      "available_quantity": 0,
+      "covered_quantity": 0,
+      "shortage_quantity": 1,
       "unit": "count",
-      "unit_cost": 900.0,
-      "available_cost": 0.0,
-      "shortage_cost": 900.0,
+      "unit_cost": 900,
+      "available_cost": 0,
+      "shortage_cost": 900,
       "source_type": "vendor",
       "vendor": "Vendor A",
+      "lead_time_days": 7,
       "related_objects": 1,
-      "reason": "Mapped material has zero stock"
+      "reason": "Primary source is out of stock; alternate vendor needs commercial approval."
     }
   ]
 }

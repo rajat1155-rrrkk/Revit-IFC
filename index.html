@@ -3,76 +3,90 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IFC Material Demo</title>
+    <title>Revit IFC Cloud</title>
     <meta
       name="description"
-      content="Premium IFC materials demo for stock visibility, procurement risk, and cost coverage."
+      content="Luxury SaaS-style IFC control room for Revit exports, procurement readiness, and portfolio intelligence."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap"
+      rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <nav class="topbar">
+    <div class="app-shell">
+      <header class="topbar">
         <div class="brand-lockup">
-          <span class="brand-mark">IFC</span>
+          <span class="brand-mark">RI</span>
           <div>
-            <p class="brand-name">Revit IFC Materials</p>
-            <p class="brand-tag">Warehouse visibility and cost intelligence</p>
+            <p class="brand-name">Revit IFC Cloud</p>
+            <p class="brand-tag">Capital-grade material intelligence for BIM teams</p>
           </div>
         </div>
-        <div class="topbar-note">Static demo powered by a real IFC report</div>
+
+        <div class="workspace-actions">
+          <div class="workspace-pill">
+            <span class="workspace-label">Workspace</span>
+            <strong id="workspace-name">Signature Portfolio</strong>
+          </div>
+          <div class="workspace-pill">
+            <span class="workspace-label">Reporting Window</span>
+            <strong id="workspace-period">Loading...</strong>
+          </div>
+          <button id="reload-sample" class="ghost-button" type="button">
+            Reload sample
+          </button>
+          <label class="accent-button" for="report-upload">Upload JSON</label>
+          <input id="report-upload" type="file" accept=".json,application/json" />
+          <div class="avatar-chip" aria-label="Demo workspace operator">AR</div>
+        </div>
+      </header>
+
+      <nav class="subnav" aria-label="Primary">
+        <a class="subnav-link active" href="#overview">Overview</a>
+        <a class="subnav-link" href="#projects">Projects</a>
+        <a class="subnav-link" href="#vendors">Vendors</a>
+        <a class="subnav-link" href="#models">Models</a>
+        <a class="subnav-link" href="#actions">Actions</a>
       </nav>
 
-      <header class="hero">
+      <section class="hero" id="overview">
         <div class="hero-copy">
-          <p class="eyebrow">IFC Material Intelligence Demo</p>
-          <h1>From exported IFC to stock visibility and cost impact.</h1>
-          <p class="lead">
-            This showcase turns an IFC export into a procurement snapshot:
-            what is already available, what is short, and what the covered
-            quantity is worth.
+          <p class="eyebrow">IFC Operations Suite</p>
+          <h1 id="hero-title">Loading procurement command center...</h1>
+          <p class="lead" id="hero-description">
+            Preparing the latest IFC portfolio view.
           </p>
-          <div class="hero-actions">
-            <button id="reload-sample" class="primary-button" type="button">
-              Reload sample report
-            </button>
-            <label class="upload-chip" for="report-upload">
-              Load custom report JSON
-            </label>
-            <input id="report-upload" type="file" accept=".json,application/json" />
-          </div>
-          <div class="trust-row">
-            <div class="trust-pill">IfcOpenShell-backed report generation</div>
-            <div class="trust-pill">Warehouse + vendor mapping</div>
-            <div class="trust-pill">Instant shortage costing</div>
-          </div>
+          <div class="hero-badges" id="hero-badges"></div>
+          <div class="hero-trends" id="hero-trends"></div>
         </div>
 
-        <aside class="hero-panel">
-          <p class="panel-label">Demo flow</p>
-          <ol>
-            <li>Export IFC from Revit or another BIM tool.</li>
-            <li>Parse assigned materials and quantity takeoff data.</li>
-            <li>Match against warehouse and vendor inventory.</li>
-            <li>Return availability, shortages, and costing.</li>
-          </ol>
-          <div class="panel-callout">
-            This version is optimized for showcasing the business outcome:
-            faster material decisions from exported IFC data.
+        <aside class="brief-panel">
+          <div class="brief-header">
+            <p class="panel-label">Executive Brief</p>
+            <p class="panel-meta" id="brief-meta">Syncing report</p>
           </div>
+          <div class="brief-grid" id="brief-grid"></div>
+          <div class="brief-callout" id="brief-callout"></div>
         </aside>
-      </header>
+      </section>
 
       <main id="app" class="dashboard" aria-live="polite">
         <section class="status-card loading-state">
-          <p>Loading sample report...</p>
+          <p>Loading flagship workspace...</p>
         </section>
       </main>
     </div>
 
     <template id="metric-template">
       <article class="metric-card">
-        <p class="metric-label"></p>
+        <div class="metric-topline">
+          <p class="metric-label"></p>
+          <span class="metric-delta"></span>
+        </div>
         <p class="metric-value"></p>
         <p class="metric-footnote"></p>
       </article>
@@ -91,10 +105,11 @@
           <span class="coverage-fill"></span>
         </div>
         <dl class="material-stats"></dl>
+        <div class="material-tags"></div>
         <p class="material-reason"></p>
       </article>
     </template>
 
     <script src="app.js" defer></script>
   </body>
-  </html>
+</html>
