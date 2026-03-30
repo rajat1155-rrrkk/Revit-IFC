@@ -38,24 +38,29 @@
           </nav>
         </div>
 
-        <div class="workspace-actions">
-          <div class="workspace-pill">
-            <span class="workspace-label">Workspace</span>
-            <strong id="workspace-name">Signature Portfolio</strong>
+        <div class="topbar-right">
+          <div class="workspace-meta">
+            <div class="workspace-pill">
+              <span class="workspace-label">Workspace</span>
+              <strong id="workspace-name">Signature Portfolio</strong>
+            </div>
+            <div class="workspace-pill">
+              <span class="workspace-label">Reporting Window</span>
+              <strong id="workspace-period">Loading...</strong>
+            </div>
           </div>
-          <div class="workspace-pill">
-            <span class="workspace-label">Reporting Window</span>
-            <strong id="workspace-period">Loading...</strong>
+
+          <div class="workspace-actions">
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
+              <span class="theme-toggle-label" id="theme-toggle-label">Day mode</span>
+            </button>
+            <button id="reload-sample" class="ghost-button" type="button">
+              Reload sample
+            </button>
+            <label class="accent-button" for="report-upload">Upload JSON</label>
+            <input id="report-upload" type="file" accept=".json,application/json" />
+            <div class="avatar-chip" aria-label="Demo workspace operator">AR</div>
           </div>
-          <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
-            <span class="theme-toggle-label" id="theme-toggle-label">Day mode</span>
-          </button>
-          <button id="reload-sample" class="ghost-button" type="button">
-            Reload sample
-          </button>
-          <label class="accent-button" for="report-upload">Upload JSON</label>
-          <input id="report-upload" type="file" accept=".json,application/json" />
-          <div class="avatar-chip" aria-label="Demo workspace operator">AR</div>
         </div>
       </header>
 
