@@ -16,15 +16,26 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body data-theme="night">
     <div class="app-shell">
       <header class="topbar">
-        <div class="brand-lockup">
-          <span class="brand-mark">RI</span>
-          <div>
-            <p class="brand-name">Revit IFC Cloud</p>
-            <p class="brand-tag">Capital-grade material intelligence for BIM teams</p>
+        <div class="topbar-left">
+          <div class="brand-lockup">
+            <span class="brand-mark">RI</span>
+            <div>
+              <p class="brand-name">Revit IFC Cloud</p>
+              <p class="brand-tag">Capital-grade material intelligence for BIM teams</p>
+            </div>
           </div>
+
+          <nav class="topnav" aria-label="Top navigation">
+            <a class="topnav-link" href="#overview">Overview</a>
+            <a class="topnav-link" href="#portfolio">Portfolio</a>
+            <a class="topnav-link" href="#procurement">Procurement</a>
+            <a class="topnav-link" href="#supply">Supply</a>
+            <a class="topnav-link" href="#materials">Materials</a>
+            <a class="topnav-link" href="#intelligence">Intelligence</a>
+          </nav>
         </div>
 
         <div class="workspace-actions">
@@ -36,6 +47,9 @@
             <span class="workspace-label">Reporting Window</span>
             <strong id="workspace-period">Loading...</strong>
           </div>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
+            <span class="theme-toggle-label" id="theme-toggle-label">Day mode</span>
+          </button>
           <button id="reload-sample" class="ghost-button" type="button">
             Reload sample
           </button>
@@ -45,40 +59,97 @@
         </div>
       </header>
 
-      <nav class="subnav" aria-label="Primary">
-        <a class="subnav-link active" href="#overview">Overview</a>
-        <a class="subnav-link" href="#projects">Projects</a>
-        <a class="subnav-link" href="#vendors">Vendors</a>
-        <a class="subnav-link" href="#models">Models</a>
-        <a class="subnav-link" href="#actions">Actions</a>
-      </nav>
-
-      <section class="hero" id="overview">
-        <div class="hero-copy">
-          <p class="eyebrow">IFC Operations Suite</p>
-          <h1 id="hero-title">Loading procurement command center...</h1>
-          <p class="lead" id="hero-description">
-            Preparing the latest IFC portfolio view.
-          </p>
-          <div class="hero-badges" id="hero-badges"></div>
-          <div class="hero-trends" id="hero-trends"></div>
-        </div>
-
-        <aside class="brief-panel">
-          <div class="brief-header">
-            <p class="panel-label">Executive Brief</p>
-            <p class="panel-meta" id="brief-meta">Syncing report</p>
+      <div class="workspace-layout">
+        <aside class="sidebar">
+          <div class="sidebar-panel">
+            <p class="sidebar-kicker">Workspace Map</p>
+            <h2 class="sidebar-title">Single page, split into product zones.</h2>
+            <p class="sidebar-copy">
+              Navigate by decision area instead of scanning one long dashboard.
+            </p>
           </div>
-          <div class="brief-grid" id="brief-grid"></div>
-          <div class="brief-callout" id="brief-callout"></div>
-        </aside>
-      </section>
 
-      <main id="app" class="dashboard" aria-live="polite">
-        <section class="status-card loading-state">
-          <p>Loading flagship workspace...</p>
-        </section>
-      </main>
+          <nav class="sidebar-nav" aria-label="Sidebar navigation">
+            <a class="sidebar-link active" href="#overview">
+              <span class="sidebar-link-title">Overview</span>
+              <span class="sidebar-link-copy">Executive summary and readiness</span>
+            </a>
+            <a class="sidebar-link" href="#portfolio">
+              <span class="sidebar-link-title">Portfolio Health</span>
+              <span class="sidebar-link-copy">Sites, KPIs, and operating posture</span>
+            </a>
+            <a class="sidebar-link" href="#procurement">
+              <span class="sidebar-link-title">Procurement Program</span>
+              <span class="sidebar-link-copy">Pipeline, blocked scope, and next actions</span>
+            </a>
+            <a class="sidebar-link" href="#supply">
+              <span class="sidebar-link-title">Supply & Risk</span>
+              <span class="sidebar-link-copy">Vendors, escalations, and milestones</span>
+            </a>
+            <a class="sidebar-link" href="#materials">
+              <span class="sidebar-link-title">Material Board</span>
+              <span class="sidebar-link-copy">Ready, top-up, and escalation queues</span>
+            </a>
+            <a class="sidebar-link" href="#intelligence">
+              <span class="sidebar-link-title">Intelligence</span>
+              <span class="sidebar-link-copy">Activity feed and model health</span>
+            </a>
+          </nav>
+
+          <div class="sidebar-panel sidebar-stats" id="sidebar-stats"></div>
+        </aside>
+
+        <div class="content-column">
+          <section class="hero" id="overview">
+            <div class="hero-copy">
+              <p class="eyebrow">IFC Operations Suite</p>
+              <h1 id="hero-title">Loading procurement command center...</h1>
+              <p class="lead" id="hero-description">
+                Preparing the latest IFC portfolio view.
+              </p>
+              <div class="hero-badges" id="hero-badges"></div>
+              <div class="hero-trends" id="hero-trends"></div>
+            </div>
+
+            <aside class="brief-panel">
+              <div class="brief-header">
+                <p class="panel-label">Executive Brief</p>
+                <p class="panel-meta" id="brief-meta">Syncing report</p>
+              </div>
+              <div class="brief-grid" id="brief-grid"></div>
+              <div class="brief-callout" id="brief-callout"></div>
+            </aside>
+          </section>
+
+          <main id="app" class="dashboard" aria-live="polite">
+            <section class="status-card loading-state">
+              <p>Loading flagship workspace...</p>
+            </section>
+          </main>
+
+          <footer class="app-footer">
+            <div>
+              <p class="footer-kicker">Revit IFC Cloud</p>
+              <h2 class="footer-title" id="footer-title">A cleaner single-page SaaS shell for IFC readiness and procurement decisions.</h2>
+              <p class="sidebar-copy" id="footer-note">Sample data is tuned to feel like a premium portfolio workspace.</p>
+            </div>
+            <div class="footer-grid">
+              <div class="footer-column">
+                <p class="footer-label">Workspace</p>
+                <p id="footer-workspace">Signature Portfolio</p>
+              </div>
+              <div class="footer-column">
+                <p class="footer-label">Mode</p>
+                <p id="footer-theme">Night theme</p>
+              </div>
+              <div class="footer-column">
+                <p class="footer-label">Built For</p>
+                <p>BIM, procurement, and preconstruction teams</p>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
     </div>
 
     <template id="metric-template">

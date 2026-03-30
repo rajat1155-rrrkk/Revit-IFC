@@ -4,6 +4,20 @@
   "inventory_file": "data/material_inventory.csv",
   "parser_used": "ifcopenshell",
   "currency": "INR",
+  "portfolio": {
+    "name": "North & West India Delivery Desk",
+    "client": "Aurum Build Systems",
+    "program_type": "Luxury mixed-use delivery portfolio",
+    "region": "Mumbai, Bengaluru, and Goa",
+    "phase": "Preconstruction procurement control",
+    "owner": "Operations Intelligence Office",
+    "currency": "INR",
+    "contract_value": 128400000,
+    "budget_protected": 9800000,
+    "readiness_score": 82,
+    "model_sync_status": "Fresh within 3 hours",
+    "portfolio_health": "Elegant and stable, with only two premium packages needing active commercial attention."
+  },
   "account": {
     "company": "Aurum Build Systems",
     "workspace_tier": "Signature",
@@ -41,6 +55,55 @@
     "projected_margin_saved": 980000,
     "forecast_confidence": 87
   },
+  "section_counts": {
+    "portfolio_metrics": 3,
+    "sites": 3,
+    "pipeline": 3,
+    "milestones": 3,
+    "vendors": 3,
+    "alerts": 3,
+    "activity_items": 3,
+    "available_materials": 3,
+    "partial_materials": 1,
+    "unavailable_materials": 2
+  },
+  "kpis": [
+    {
+      "label": "Portfolio readiness",
+      "value": "82%",
+      "delta": "+6% this week",
+      "trend": "up",
+      "note": "Four active sites are above the controlled procurement threshold."
+    },
+    {
+      "label": "Exposure value",
+      "value": "₹2.45L",
+      "delta": "-₹18K",
+      "trend": "down",
+      "note": "Shortage value fell after vendor repricing and warehouse reassignment."
+    },
+    {
+      "label": "At-risk packages",
+      "value": "2",
+      "delta": "-1",
+      "trend": "down",
+      "note": "Roof enclosure and gypsum board packages still require escalation."
+    },
+    {
+      "label": "Models synced",
+      "value": "7",
+      "delta": "+2",
+      "trend": "up",
+      "note": "Architecture, structural, and MEP packages are aligned to current review."
+    },
+    {
+      "label": "Vendor response rate",
+      "value": "91%",
+      "delta": "+4%",
+      "trend": "up",
+      "note": "Gold-tier suppliers are responding inside the team SLA."
+    }
+  ],
   "portfolio_metrics": [
     {
       "label": "Portfolio margin protected",
@@ -62,6 +125,29 @@
       "delta": "-11% vs last review",
       "tone": "positive",
       "note": "Two interior packages moved from blocked to watchlist this week."
+    }
+  ],
+  "pipeline_summary": [
+    {
+      "stage": "Ready to release",
+      "count": 8,
+      "value": 18600000,
+      "note": "Commercially cleared and ready for scheduled buyout.",
+      "owner": "Procurement lead"
+    },
+    {
+      "stage": "Commercial review",
+      "count": 5,
+      "value": 9400000,
+      "note": "Awaiting rate alignment or alternate source approval.",
+      "owner": "Commercial manager"
+    },
+    {
+      "stage": "Blocked",
+      "count": 2,
+      "value": 245400,
+      "note": "Immediate leadership attention required to preserve schedule.",
+      "owner": "Operations desk"
     }
   ],
   "sites": [
@@ -202,6 +288,31 @@
       "detail": "Can proceed once alternate source is commercially signed off."
     }
   ],
+  "milestone_summary": [
+    {
+      "name": "Facade commercial freeze",
+      "date": "2026-04-02",
+      "status": "Upcoming",
+      "detail": "Target date for final vendor alignment and cashflow lock."
+    },
+    {
+      "name": "Roof package buyout",
+      "date": "2026-04-05",
+      "status": "Critical",
+      "detail": "Needs confirmed vendor capacity to avoid affecting site sequencing."
+    },
+    {
+      "name": "Interior board release",
+      "date": "2026-04-08",
+      "status": "Upcoming",
+      "detail": "Can proceed once alternate source is commercially signed off."
+    }
+  ],
+  "dashboard_copy": {
+    "headline": "A refined procurement command center for premium IFC delivery",
+    "subheadline": "Designed to read like a high-trust SaaS workspace: clear sectioning, polished sample data, and fast decisions without visual clutter.",
+    "footer_note": "Sample data is illustrative and tuned for a luxurious control-room feel."
+  },
   "available_materials": [
     {
       "ifc_name": "bulk-material_sand-coarse_generic",

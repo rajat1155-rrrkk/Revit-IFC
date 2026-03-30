@@ -1,13 +1,17 @@
 const SAMPLE_REPORT_PATH = "/public/data/report.json";
+const THEME_STORAGE_KEY = "revit-ifc-cloud-theme";
 
 const currencyFormatterCache = new Map();
 const compactCurrencyFormatterCache = new Map();
 
 const app = document.querySelector("#app");
+const body = document.body;
 const metricTemplate = document.querySelector("#metric-template");
 const materialTemplate = document.querySelector("#material-template");
 const uploadInput = document.querySelector("#report-upload");
 const reloadButton = document.querySelector("#reload-sample");
+const themeToggle = document.querySelector("#theme-toggle");
+const themeToggleLabel = document.querySelector("#theme-toggle-label");
 const workspaceName = document.querySelector("#workspace-name");
 const workspacePeriod = document.querySelector("#workspace-period");
 const heroTitle = document.querySelector("#hero-title");
@@ -17,6 +21,11 @@ const heroTrends = document.querySelector("#hero-trends");
 const briefMeta = document.querySelector("#brief-meta");
 const briefGrid = document.querySelector("#brief-grid");
 const briefCallout = document.querySelector("#brief-callout");
+const sidebarStats = document.querySelector("#sidebar-stats");
+const footerWorkspace = document.querySelector("#footer-workspace");
+const footerTheme = document.querySelector("#footer-theme");
+const footerTitle = document.querySelector("#footer-title");
+const footerNote = document.querySelector("#footer-note");
 
 function getCurrencyFormatter(currency) {
   if (!currencyFormatterCache.has(currency)) {
@@ -77,6 +86,21 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function formatDate(value) {
+  if (!value) {
+    return "TBD";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+  }).format(date);
+}
+
 function truncatePath(value) {
   const parts = String(value || "").split("/");
   return parts[parts.length - 1] || value;
@@ -119,6 +143,27 @@ function average(values, key) {
   return total / values.length;
 }
 
+function initializeTheme() {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const preferredTheme = storedTheme || "night";
+  applyTheme(preferredTheme);
+}
+
+function applyTheme(theme) {
+  const normalizedTheme = theme === "day" ? "day" : "night";
+  body.dataset.theme = normalizedTheme;
+  localStorage.setItem(THEME_STORAGE_KEY, normalizedTheme);
+
+  const nextLabel = normalizedTheme === "night" ? "Day mode" : "Night mode";
+  themeToggle.setAttribute("aria-pressed", normalizedTheme === "day" ? "true" : "false");
+  themeToggleLabel.textContent = nextLabel;
+  footerTheme.textContent = normalizedTheme === "night" ? "Night theme" : "Day theme";
+}
+
+function toggleTheme() {
+  applyTheme(body.dataset.theme === "night" ? "day" : "night");
+}
+
 function normalizeReport(report) {
   const summary = report.summary || {};
   const derivedPortfolio = {
@@ -140,31 +185,38 @@ function normalizeReport(report) {
     portfolio_health:
       report.portfolio?.portfolio_health ||
       `Model health score ${report.account?.model_health_score || 0} with forecast confidence ${summary.forecast_confidence || 0}%.`,
+    tier: report.portfolio?.tier || report.account?.workspace_tier || "Signature",
+    connected_warehouses: report.portfolio?.connected_warehouses || report.account?.connected_warehouses || 0,
+    active_projects: report.portfolio?.active_projects || report.account?.active_projects || 0,
   };
 
-  const kpis = Array.isArray(report.kpis) && report.kpis.length
-    ? report.kpis
-    : Array.isArray(report.portfolio_metrics) && report.portfolio_metrics.length
-      ? report.portfolio_metrics.map((metric) => ({
-          label: metric.label,
-          value: metric.value,
-          delta: metric.delta,
-          trend: metric.trend || (metric.tone === "positive" ? "up" : metric.tone === "negative" ? "down" : "flat"),
-          note: metric.note,
-        }))
-      : buildMetricFallback({ ...report, portfolio: derivedPortfolio });
+  const kpis =
+    Array.isArray(report.kpis) && report.kpis.length
+      ? report.kpis
+      : Array.isArray(report.portfolio_metrics) && report.portfolio_metrics.length
+        ? report.portfolio_metrics.map((metric) => ({
+            label: metric.label,
+            value: metric.value,
+            delta: metric.delta,
+            trend: metric.trend || (metric.tone === "positive" ? "up" : metric.tone === "negative" ? "down" : "flat"),
+            note: metric.note,
+          }))
+        : buildMetricFallback({ ...report, portfolio: derivedPortfolio });
 
-  const activeProjects = Array.isArray(report.active_projects) && report.active_projects.length
-    ? report.active_projects
-    : (report.sites || []).map((site) => ({
-        name: site.name,
-        discipline: report.project?.discipline || "Project",
-        phase: site.phase || report.project?.stage || "Portfolio review",
-        readiness: site.readiness || site.coverage || summary.readiness_score || 0,
-        shortage_value: site.shortage_value || 0,
-        last_sync: site.last_sync || "Latest review",
-        status: site.status || "watch",
-      }));
+  const activeProjects =
+    Array.isArray(report.active_projects) && report.active_projects.length
+      ? report.active_projects
+      : (report.sites || []).map((site) => ({
+          name: site.name,
+          discipline: report.project?.discipline || "Project",
+          location: site.location || report.project?.location || "Active market",
+          phase: site.phase || report.project?.stage || "Portfolio review",
+          readiness: site.readiness || site.coverage || summary.readiness_score || 0,
+          shortage_value: site.shortage_value || 0,
+          packages_at_risk: site.packages_at_risk || 0,
+          last_sync: site.last_sync || "Latest review",
+          status: site.status || "watch",
+        }));
 
   const vendors = (report.vendors || []).map((vendor) => ({
     name: vendor.name,
@@ -174,18 +226,20 @@ function normalizeReport(report) {
     quote_acceptance: vendor.quote_acceptance || vendor.fulfillment_rate || 0,
     available_capacity: vendor.available_capacity || vendor.status || "Managed",
     coverage_role: vendor.coverage_role || vendor.category || "Strategic supplier",
+    exposure: vendor.exposure || 0,
   }));
 
-  const risks = Array.isArray(report.risks) && report.risks.length
-    ? report.risks
-    : (report.alerts || []).map((alert) => ({
-        severity: alert.severity || "medium",
-        title: alert.title,
-        impact: alert.impact || 0,
-        owner: alert.owner || "Operations desk",
-        due_in: alert.eta || "TBD",
-        status: alert.detail || "Open",
-      }));
+  const risks =
+    Array.isArray(report.risks) && report.risks.length
+      ? report.risks
+      : (report.alerts || []).map((alert) => ({
+          severity: alert.severity || "medium",
+          title: alert.title,
+          impact: alert.impact || 0,
+          owner: alert.owner || "Operations desk",
+          due_in: alert.eta || "TBD",
+          status: alert.detail || "Open",
+        }));
 
   const activity = (report.activity || []).map((entry) => ({
     time: entry.time || "Now",
@@ -193,25 +247,43 @@ function normalizeReport(report) {
     severity: entry.severity || "info",
   }));
 
-  const modelPackages = Array.isArray(report.model_packages) && report.model_packages.length
-    ? report.model_packages
-    : (report.milestones || []).map((milestone) => ({
-        name: milestone.name,
-        discipline: "Milestone",
-        version: report.project?.ifc_schema || "IFC",
-        sync_status: milestone.status || "Queued",
-        entities: 0,
-        coverage: summary.forecast_confidence || derivedPortfolio.readiness_score || 0,
-      }));
+  const modelPackages =
+    Array.isArray(report.model_packages) && report.model_packages.length
+      ? report.model_packages
+      : (report.milestones || []).map((milestone) => ({
+          name: milestone.name,
+          discipline: "Milestone",
+          version: report.project?.ifc_schema || "IFC",
+          sync_status: milestone.status || "Queued",
+          entities: 0,
+          coverage: summary.forecast_confidence || derivedPortfolio.readiness_score || 0,
+          detail: milestone.detail || "",
+          date: milestone.date || "",
+        }));
 
-  const recommendedActions = Array.isArray(report.recommended_actions) && report.recommended_actions.length
-    ? report.recommended_actions
-    : (report.procurement_pipeline || []).map((item) => ({
-        action: `${item.stage || "Pipeline stage"}: ${item.note || "Advance package decisions"}`,
-        priority: Number(item.count || 0) > 1 ? "high" : "medium",
-        owner: report.project?.owner || "Operations desk",
-        impact: `${item.count || 0} items · ${item.value || "Tracked value"}`,
-      }));
+  const recommendedActions =
+    Array.isArray(report.recommended_actions) && report.recommended_actions.length
+      ? report.recommended_actions
+      : (report.procurement_pipeline || []).map((item) => ({
+          action: `${item.stage || "Pipeline stage"}: ${item.note || "Advance package decisions"}`,
+          priority: Number(item.count || 0) > 4 ? "high" : "medium",
+          owner: report.project?.owner || "Operations desk",
+          impact: `${item.count || 0} items · ${formatCompactCurrency(item.value || 0, report.currency || "INR")}`,
+        }));
+
+  const procurementPipeline = (report.procurement_pipeline || []).map((item) => ({
+    stage: item.stage,
+    count: item.count || 0,
+    value: item.value || 0,
+    note: item.note || "Commercial action required.",
+  }));
+
+  const milestones = (report.milestones || []).map((milestone) => ({
+    name: milestone.name,
+    date: milestone.date,
+    status: milestone.status || "Upcoming",
+    detail: milestone.detail || "",
+  }));
 
   return {
     ...report,
@@ -223,58 +295,9 @@ function normalizeReport(report) {
     activity,
     model_packages: modelPackages,
     recommended_actions: recommendedActions,
+    procurement_pipeline: procurementPipeline,
+    milestones,
   };
-}
-
-function createMetricCard(metric) {
-  const fragment = metricTemplate.content.cloneNode(true);
-  const delta = fragment.querySelector(".metric-delta");
-
-  fragment.querySelector(".metric-label").textContent = metric.label;
-  fragment.querySelector(".metric-value").textContent = metric.value;
-  fragment.querySelector(".metric-footnote").textContent = metric.note || "";
-  delta.textContent = metric.delta || "Stable";
-  delta.classList.add(slugify(metric.trend || "flat"));
-
-  return fragment;
-}
-
-function createStatRow(label, value) {
-  const wrapper = document.createElement("div");
-  const dt = document.createElement("dt");
-  const dd = document.createElement("dd");
-  dt.textContent = label;
-  dd.textContent = value;
-  wrapper.append(dt, dd);
-  return wrapper;
-}
-
-function createTag(text) {
-  const tag = document.createElement("span");
-  tag.className = "tag";
-  tag.textContent = text;
-  return tag;
-}
-
-function createEmptyCard(copy) {
-  const card = document.createElement("article");
-  card.className = "material-card empty-card";
-  card.innerHTML = `
-    <p class="material-name">Nothing here</p>
-    <p class="empty-copy">${copy}</p>
-  `;
-  return card;
-}
-
-function createSectionHeader(kicker, title, subtitle) {
-  const header = document.createElement("div");
-  header.className = "status-card";
-  header.innerHTML = `
-    <p class="section-kicker">${kicker}</p>
-    <h2 class="section-title">${title}</h2>
-    <p class="section-subtitle">${subtitle}</p>
-  `;
-  return header;
 }
 
 function buildMetricFallback(report) {
@@ -296,27 +319,103 @@ function buildMetricFallback(report) {
       note: "Current shortage exposure across active materials",
     },
     {
-      label: "Available",
+      label: "Available coverage",
       value: formatNumber(summary.available_count),
       delta: "Covered",
       trend: "up",
       note: "Materials fully covered from approved inventory",
     },
     {
-      label: "Partial",
+      label: "Needs top-up",
       value: formatNumber(summary.partial_count),
-      delta: "Needs top-up",
+      delta: "Pending",
       trend: "down",
-      note: "Materials requiring supplemental procurement",
+      note: "Packages requiring supplemental procurement",
     },
     {
-      label: "Unavailable",
+      label: "Escalations",
       value: formatNumber(summary.unavailable_count),
-      delta: "Escalation",
+      delta: "Open",
       trend: "down",
       note: "Packages blocked by zero stock or sourcing gaps",
     },
   ];
+}
+
+function createMetricCard(metric) {
+  const fragment = metricTemplate.content.cloneNode(true);
+  const delta = fragment.querySelector(".metric-delta");
+
+  fragment.querySelector(".metric-label").textContent = metric.label;
+  fragment.querySelector(".metric-value").textContent = metric.value;
+  fragment.querySelector(".metric-footnote").textContent = metric.note || "";
+  delta.textContent = metric.delta || "Stable";
+  delta.className = `metric-delta ${slugify(metric.trend || "flat")}`;
+
+  return fragment;
+}
+
+function createStatRow(label, value) {
+  const wrapper = document.createElement("div");
+  const dt = document.createElement("dt");
+  const dd = document.createElement("dd");
+  dt.textContent = label;
+  dd.textContent = value;
+  wrapper.append(dt, dd);
+  return wrapper;
+}
+
+function createTag(text) {
+  const tag = document.createElement("span");
+  tag.className = "tag";
+  tag.textContent = text;
+  return tag;
+}
+
+function createSectionGroup(id, kicker, title, subtitle, ...content) {
+  const section = document.createElement("section");
+  section.id = id;
+  section.className = "section-group";
+
+  const header = document.createElement("div");
+  header.className = "section-shell";
+  header.innerHTML = `
+    <div class="section-header">
+      <div>
+        <p class="section-kicker">${kicker}</p>
+        <h2 class="section-heading">${title}</h2>
+      </div>
+      <p class="section-subtitle">${subtitle}</p>
+    </div>
+  `;
+
+  const body = document.createElement("div");
+  body.className = "section-body";
+  content.forEach((node) => body.append(node));
+
+  section.append(header, body);
+  return section;
+}
+
+function createEmptyCard(copy) {
+  const card = document.createElement("article");
+  card.className = "material-card empty-card";
+  card.innerHTML = `
+    <p class="material-name">Nothing here</p>
+    <p class="empty-copy">${copy}</p>
+  `;
+  return card;
+}
+
+function createSectionHeader(kicker, title, subtitle) {
+  const header = document.createElement("div");
+  header.className = "status-card";
+  header.innerHTML = `
+    <p class="section-kicker">${kicker}</p>
+    <h3 class="section-title">${title}</h3>
+    <p class="section-subtitle">${subtitle}</p>
+  `;
+  return header;
 }
 
 function buildBriefItems(report) {
@@ -342,6 +441,303 @@ function buildBriefItems(report) {
   ];
 }
 
+function createMiniChartMarkup(items, key, currency) {
+  if (!Array.isArray(items) || !items.length) {
+    return `<div class="empty-inline">Trendline will appear once a multi-period sample is available.</div>`;
+  }
+
+  const max = Math.max(...items.map((item) => Number(item[key] || 0)), 1);
+  return items
+    .map(
+      (item) => `
+        <div class="mini-row">
+          <label>${item.week || item.label || "Current"}</label>
+          <div class="mini-bar"><span style="width:${Math.max(12, (Number(item[key] || 0) / max) * 100)}%"></span></div>
+          <strong>${key === "score" ? `${item[key]}%` : formatCompactCurrency(item[key], currency)}</strong>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function createOverviewSection(report, currency) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "overview-stack";
+  wrapper.append(createSpotlightSection(report, currency), createMetricsSection(report));
+  return wrapper;
+}
+
+function createSpotlightSection(report, currency) {
+  const portfolio = report.portfolio || {};
+  const summary = report.summary || {};
+  const readiness = portfolio.readiness_score || overallCoverage(summary);
+  const section = document.createElement("section");
+  section.className = "spotlight-card";
+
+  const exposure =
+    report.kpis?.find((item) => slugify(item.label) === "exposure-value")?.value ||
+    formatCurrency(summary.total_shortage_cost || 0, currency);
+  const vendorRate = `${Math.round(average(report.vendors || [], "quote_acceptance"))}%`;
+  const activeProjects = report.active_projects?.length || portfolio.active_projects || 0;
+
+  section.innerHTML = `
+    <div class="spotlight-copy">
+      <p class="section-kicker">Portfolio Signal</p>
+      <h2 class="spotlight-title">${readiness >= 85 ? "Release confidence is strong" : readiness >= 70 ? "Program is stable with targeted gaps" : "Commercial exposure still needs attention"}</h2>
+      <p class="section-subtitle">
+        ${portfolio.portfolio_health || "This portfolio view combines IFC material coverage, vendor posture, and model freshness into one operating signal."}
+      </p>
+      <div class="mini-chart">
+        ${createMiniChartMarkup(report.trends?.weekly_readiness || [], "score", currency)}
+      </div>
+    </div>
+    <div class="spotlight-metrics">
+      <div class="spotlight-ring" style="--ring-value: ${Math.round(readiness * 3.6)}deg">
+        <span>${readiness}%</span>
+      </div>
+      <div class="spotlight-list">
+        <div class="spotlight-item"><span>Covered cost</span><strong>${formatCurrency(summary.total_available_cost || 0, currency)}</strong></div>
+        <div class="spotlight-item"><span>Exposure value</span><strong>${exposure}</strong></div>
+        <div class="spotlight-item"><span>Vendor posture</span><strong>${vendorRate}</strong></div>
+        <div class="spotlight-item"><span>Active projects</span><strong>${activeProjects}</strong></div>
+      </div>
+    </div>
+  `;
+
+  return section;
+}
+
+function createMetricsSection(report) {
+  const grid = document.createElement("section");
+  grid.className = "metrics-grid";
+  const metrics = Array.isArray(report.kpis) && report.kpis.length ? report.kpis : buildMetricFallback(report);
+  metrics.forEach((metric) => grid.append(createMetricCard(metric)));
+  return grid;
+}
+
+function createProjectsSection(report, currency) {
+  const wrapper = document.createElement("section");
+  wrapper.className = "project-strip";
+
+  (report.active_projects || []).forEach((project) => {
+    const card = document.createElement("article");
+    card.className = "project-card";
+    card.innerHTML = `
+      <div class="project-top">
+        <div>
+          <p class="project-kicker">${project.discipline || "Project"}${project.location ? ` · ${project.location}` : ""}</p>
+          <h3 class="project-name">${project.name}</h3>
+          <p class="project-label">${project.phase || "In progress"}</p>
+        </div>
+        <span class="project-status ${slugify(project.status)}">${project.status || "active"}</span>
+      </div>
+      <p class="project-value">${project.readiness || 0}%</p>
+      <div class="progress-track">
+        <span class="progress-fill" style="width:${Math.max(0, Math.min(100, Number(project.readiness || 0)))}%"></span>
+      </div>
+      <div class="project-footer">
+        <span>Shortage ${formatCurrency(project.shortage_value || 0, currency)}</span>
+        <span>${project.packages_at_risk || 0} packages at risk</span>
+      </div>
+    `;
+    wrapper.append(card);
+  });
+
+  return wrapper;
+}
+
+function createPipelineSection(report, currency) {
+  const card = document.createElement("section");
+  card.className = "surface-card";
+  const rows = report.procurement_pipeline || [];
+
+  card.innerHTML = `
+    <div class="surface-header">
+      <div>
+        <p class="section-kicker">Procurement Program</p>
+        <h3 class="section-title">Release pipeline</h3>
+      </div>
+      <p class="section-subtitle">Grouped by commercial readiness so decisions are easier to scan.</p>
+    </div>
+  `;
+
+  const list = document.createElement("div");
+  list.className = "pipeline-list";
+
+  rows.forEach((item) => {
+    const row = document.createElement("article");
+    row.className = "pipeline-card";
+    row.innerHTML = `
+      <div class="status-row">
+        <div>
+          <h4 class="pipeline-title">${item.stage}</h4>
+          <p class="vendor-meta">${item.note}</p>
+        </div>
+        <span class="risk-pill ${slugify(item.stage)}">${item.count} items</span>
+      </div>
+      <div class="status-row pipeline-meta">
+        <span class="project-label">Program value</span>
+        <strong>${formatCompactCurrency(item.value || 0, currency)}</strong>
+      </div>
+    `;
+    list.append(row);
+  });
+
+  card.append(list);
+  return card;
+}
+
+function createActionsSection(report) {
+  const wrapper = document.createElement("section");
+  wrapper.className = "actions-grid";
+
+  (report.recommended_actions || []).forEach((action) => {
+    const card = document.createElement("article");
+    card.className = "action-card";
+    card.innerHTML = `
+      <p class="action-priority">${action.priority || "normal"} priority</p>
+      <h3>${action.action}</h3>
+      <p class="action-owner">${action.owner || "Operations desk"}</p>
+      <p class="action-impact">${action.impact || "Maintains portfolio momentum and reduces sourcing friction."}</p>
+    `;
+    wrapper.append(card);
+  });
+
+  return wrapper;
+}
+
+function createVendorSection(report, currency) {
+  const vendors = Array.isArray(report.vendors) ? report.vendors : [];
+  const card = document.createElement("section");
+  card.className = "surface-card";
+
+  const onTimeRate = Math.round(average(vendors, "on_time_rate"));
+  const leadTime = average(vendors, "avg_lead_time_days").toFixed(1);
+
+  card.innerHTML = `
+    <div class="surface-header">
+      <div>
+        <p class="section-kicker">Supplier Health</p>
+        <h3 class="section-title">Managed sourcing network</h3>
+      </div>
+      <p class="section-subtitle">${onTimeRate}% average fulfillment confidence across active vendors</p>
+    </div>
+    <div class="status-card inline-summary">
+      <div class="status-row">
+        <span class="project-label">Average lead time</span>
+        <strong>${leadTime} days</strong>
+      </div>
+      <div class="status-row">
+        <span class="project-label">Tracked exposure</span>
+        <strong>${formatCompactCurrency(vendors.reduce((sum, vendor) => sum + Number(vendor.exposure || 0), 0), currency)}</strong>
+      </div>
+    </div>
+  `;
+
+  const list = document.createElement("div");
+  list.className = "vendor-list";
+
+  vendors.forEach((vendor) => {
+    const item = document.createElement("article");
+    item.className = "vendor-item";
+    item.innerHTML = `
+      <div class="status-row">
+        <div>
+          <h4 class="vendor-name">${vendor.name}</h4>
+          <p class="vendor-meta">${vendor.coverage_role || "Strategic supplier"} · ${vendor.available_capacity || "Managed capacity"}</p>
+        </div>
+        <span class="risk-pill ${slugify(vendor.tier) || "info"}">${vendor.tier || "Managed"}</span>
+      </div>
+      <div class="status-row pipeline-meta">
+        <span class="project-label">Fulfillment ${formatNumber(vendor.on_time_rate)}%</span>
+        <span class="project-label">${Math.round(vendor.avg_lead_time_days || 0)} day lead</span>
+      </div>
+    `;
+    list.append(item);
+  });
+
+  card.append(list);
+  return card;
+}
+
+function createRiskSection(report, currency) {
+  const risks = Array.isArray(report.risks) ? report.risks : [];
+  const card = document.createElement("section");
+  card.className = "surface-card";
+
+  card.innerHTML = `
+    <div class="surface-header">
+      <div>
+        <p class="section-kicker">Risk Register</p>
+        <h3 class="section-title">Escalations and blockers</h3>
+      </div>
+      <p class="section-subtitle">${risks.length} tracked items still require explicit ownership.</p>
+    </div>
+  `;
+
+  const list = document.createElement("div");
+  list.className = "risk-list";
+
+  risks.forEach((risk) => {
+    const item = document.createElement("article");
+    item.className = "risk-item";
+    item.innerHTML = `
+      <div class="status-row">
+        <div>
+          <h4 class="risk-title">${risk.title}</h4>
+          <p class="vendor-meta">${risk.owner || "Operations"} · Due ${risk.due_in || "TBD"}</p>
+        </div>
+        <span class="risk-pill ${slugify(risk.severity)}">${risk.severity || "Info"}</span>
+      </div>
+      <div class="status-row pipeline-meta">
+        <span class="project-label">${risk.status || "Open"}</span>
+        <strong>${formatCurrency(risk.impact || 0, currency)}</strong>
+      </div>
+    `;
+    list.append(item);
+  });
+
+  card.append(list);
+  return card;
+}
+
+function createMilestonesSection(report) {
+  const card = document.createElement("section");
+  card.className = "surface-card milestones-card";
+
+  card.innerHTML = `
+    <div class="surface-header">
+      <div>
+        <p class="section-kicker">Milestones</p>
+        <h3 class="section-title">Upcoming release moments</h3>
+      </div>
+      <p class="section-subtitle">Important dates that shape sourcing urgency and model freeze decisions.</p>
+    </div>
+  `;
+
+  const list = document.createElement("div");
+  list.className = "milestone-list";
+
+  (report.milestones || []).forEach((milestone) => {
+    const item = document.createElement("article");
+    item.className = "milestone-item";
+    item.innerHTML = `
+      <div class="status-row">
+        <div>
+          <h4 class="risk-title">${milestone.name}</h4>
+          <p class="vendor-meta">${milestone.detail || "Scheduled portfolio milestone"}</p>
+        </div>
+        <span class="risk-pill ${slugify(milestone.status)}">${milestone.status || "Upcoming"}</span>
+      </div>
+      <p class="milestone-date">${formatDate(milestone.date)}</p>
+    `;
+    list.append(item);
+  });
+
+  card.append(list);
+  return card;
+}
+
 function createMaterialCard(row, status, currency, vendorMap) {
   const fragment = materialTemplate.content.cloneNode(true);
   const fill = fragment.querySelector(".coverage-fill");
@@ -353,7 +749,7 @@ function createMaterialCard(row, status, currency, vendorMap) {
 
   fragment.querySelector(".material-name").textContent = row.ifc_name;
   fragment.querySelector(".material-meta").textContent =
-    `${row.mapped_to || "No mapping"} · ${row.vendor || "Unassigned"} · ${row.source_type || "Unknown source"}`;
+    `${row.package || row.mapped_to || "No mapping"} · ${row.zone || row.vendor || "Unassigned"} · ${row.source_type || "Unknown source"}`;
 
   pill.textContent = status;
   pill.classList.add(status.toLowerCase());
@@ -367,7 +763,7 @@ function createMaterialCard(row, status, currency, vendorMap) {
   );
 
   [
-    `${Math.round(Number(vendor.avg_lead_time_days || (status === "Available" ? 2 : status === "Partial" ? 4 : 7)))} day lead`,
+    `${Math.round(Number(row.lead_time_days || vendor.avg_lead_time_days || (status === "Available" ? 2 : status === "Partial" ? 4 : 7)))} day lead`,
     `${vendor.tier || (row.source_type === "warehouse" ? "Gold" : "Silver")} tier`,
     `${formatNumber(row.related_objects || 0)} linked objects`,
     status === "Unavailable"
@@ -377,16 +773,13 @@ function createMaterialCard(row, status, currency, vendorMap) {
         : "Execution ready",
   ].forEach((text) => tags.append(createTag(text)));
 
-  if (row.reason) {
-    reason.textContent = row.reason;
-  } else {
-    reason.textContent =
-      status === "Available"
-        ? "Covered by current stock and approved sourcing."
-        : status === "Partial"
-          ? "Coverage is present but below release threshold for clean execution."
-          : "This package requires immediate procurement attention.";
-  }
+  reason.textContent =
+    row.reason ||
+    (status === "Available"
+      ? "Covered by current stock and approved sourcing."
+      : status === "Partial"
+        ? "Coverage is present but below release threshold for clean execution."
+        : "This package requires immediate procurement attention.");
 
   return fragment.querySelector(".material-card");
 }
@@ -411,209 +804,9 @@ function createMaterialSection(title, subtitle, rows, status, currency, vendorMa
   return column;
 }
 
-function createSpotlightSection(report, currency) {
-  const portfolio = report.portfolio || {};
-  const summary = report.summary || {};
-  const readiness = portfolio.readiness_score || overallCoverage(summary);
-  const section = document.createElement("section");
-  section.className = "spotlight-card";
-
-  const exposure =
-    report.kpis?.find((item) => slugify(item.label) === "exposure-value")?.value ||
-    formatCurrency(summary.total_shortage_cost || 0, currency);
-  const vendorRate =
-    report.kpis?.find((item) => slugify(item.label) === "vendor-response-rate")?.value ||
-    `${Math.round(average(report.vendors || [], "quote_acceptance"))}%`;
-  const syncedModels =
-    report.kpis?.find((item) => slugify(item.label) === "models-synced")?.value ||
-    formatNumber((report.model_packages || []).length);
-
-  section.innerHTML = `
-    <div class="spotlight-copy">
-      <p class="section-kicker">Portfolio Signal</p>
-      <h2 class="spotlight-title">${readiness >= 85 ? "Portfolio release window is strong" : readiness >= 70 ? "Portfolio is stable with targeted gaps" : "Procurement exposure is still elevated"}</h2>
-      <p class="section-subtitle">
-        ${portfolio.portfolio_health || "This portfolio view combines IFC material coverage, vendor response, and model freshness into one operating signal."}
-      </p>
-      <div class="mini-chart">
-        ${createMiniChartMarkup(report.trends?.weekly_readiness || [], "score")}
-      </div>
-    </div>
-    <div class="spotlight-metrics">
-      <div class="spotlight-ring" style="--ring-value: ${Math.round(readiness * 3.6)}deg">
-        <span>${readiness}%</span>
-      </div>
-      <div class="spotlight-list">
-        <div class="spotlight-item"><span>Covered cost</span><strong>${formatCurrency(summary.total_available_cost || 0, currency)}</strong></div>
-        <div class="spotlight-item"><span>Exposure value</span><strong>${exposure}</strong></div>
-        <div class="spotlight-item"><span>Vendor response</span><strong>${vendorRate}</strong></div>
-        <div class="spotlight-item"><span>Models synced</span><strong>${syncedModels}</strong></div>
-      </div>
-    </div>
-  `;
-
-  return section;
-}
-
-function createMiniChartMarkup(items, key) {
-  if (!Array.isArray(items) || !items.length) {
-    return "";
-  }
-
-  const max = Math.max(...items.map((item) => Number(item[key] || 0)), 1);
-  return items
-    .map(
-      (item) => `
-        <div class="mini-row">
-          <label>${item.week || item.label || "Current"}</label>
-          <div class="mini-bar"><span style="width:${Math.max(10, (Number(item[key] || 0) / max) * 100)}%"></span></div>
-          <strong>${key === "score" ? `${item[key]}%` : formatCompactCurrency(item[key], "INR")}</strong>
-        </div>
-      `,
-    )
-    .join("");
-}
-
-function createProjectsSection(report, currency) {
-  const wrapper = document.createElement("section");
-  wrapper.id = "projects";
-  wrapper.className = "project-strip";
-
-  (report.active_projects || []).forEach((project) => {
-    const card = document.createElement("article");
-    card.className = "project-card";
-    card.innerHTML = `
-      <div class="project-top">
-        <div>
-          <p class="project-kicker">${project.discipline || "Project"}</p>
-          <h3 class="project-name">${project.name}</h3>
-          <p class="project-label">${project.phase || "In progress"}</p>
-        </div>
-        <span class="project-status ${slugify(project.status)}">${project.status || "active"}</span>
-      </div>
-      <p class="project-value">${project.readiness || 0}%</p>
-      <div class="progress-track">
-        <span class="progress-fill" style="width:${Math.max(0, Math.min(100, Number(project.readiness || 0)))}%"></span>
-      </div>
-      <div class="project-footer">
-        <span>Shortage ${formatCurrency(project.shortage_value || 0, currency)}</span>
-        <span>${project.last_sync || "Recently synced"}</span>
-      </div>
-    `;
-    wrapper.append(card);
-  });
-
-  return wrapper;
-}
-
-function createMetricsSection(report) {
-  const grid = document.createElement("section");
-  grid.className = "metrics-grid";
-  const metrics = Array.isArray(report.kpis) && report.kpis.length ? report.kpis : buildMetricFallback(report);
-  metrics.forEach((metric) => grid.append(createMetricCard(metric)));
-  return grid;
-}
-
-function createVendorSection(report) {
-  const vendors = Array.isArray(report.vendors) ? report.vendors : [];
-  const card = document.createElement("section");
-  card.className = "surface-card";
-  card.id = "vendors";
-
-  const onTimeRate = Math.round(average(vendors, "on_time_rate"));
-  const leadTime = average(vendors, "avg_lead_time_days").toFixed(1);
-
-  card.innerHTML = `
-    <div class="surface-header">
-      <div>
-        <p class="section-kicker">Supplier Health</p>
-        <h2 class="section-title">Premium sourcing network</h2>
-      </div>
-      <p class="section-subtitle">${onTimeRate}% average on-time rate across active suppliers</p>
-    </div>
-    <div class="status-card" style="margin-bottom: 1rem;">
-      <div class="status-row">
-        <span class="project-label">Average lead time</span>
-        <strong>${leadTime} days</strong>
-      </div>
-      <div class="status-row" style="margin-top: 0.65rem;">
-        <span class="project-label">Fallback-ready vendors</span>
-        <strong>${vendors.filter((vendor) => vendor.tier).length}</strong>
-      </div>
-    </div>
-  `;
-
-  const list = document.createElement("div");
-  list.className = "vendor-list";
-
-  vendors.forEach((vendor) => {
-    const item = document.createElement("article");
-    item.className = "vendor-item";
-    item.innerHTML = `
-      <div class="status-row">
-        <div>
-          <h3 class="vendor-name">${vendor.name}</h3>
-          <p class="vendor-meta">${vendor.coverage_role || "Strategic supplier"} · ${vendor.available_capacity || "Managed capacity"}</p>
-        </div>
-        <span class="risk-pill ${slugify(vendor.tier) || "info"}">${vendor.tier || "Managed"}</span>
-      </div>
-      <div class="status-row" style="margin-top: 0.65rem;">
-        <span class="project-label">On-time ${formatNumber(vendor.on_time_rate)}%</span>
-        <span class="project-label">Quote acceptance ${formatNumber(vendor.quote_acceptance)}%</span>
-      </div>
-    `;
-    list.append(item);
-  });
-
-  card.append(list);
-  return card;
-}
-
-function createRiskSection(report, currency) {
-  const risks = Array.isArray(report.risks) ? report.risks : [];
-  const card = document.createElement("section");
-  card.className = "surface-card";
-
-  card.innerHTML = `
-    <div class="surface-header">
-      <div>
-        <p class="section-kicker">Risk Register</p>
-        <h2 class="section-title">Escalation queue</h2>
-      </div>
-      <p class="section-subtitle">${risks.length} tracked risks require active ownership</p>
-    </div>
-  `;
-
-  const list = document.createElement("div");
-  list.className = "risk-list";
-
-  risks.forEach((risk) => {
-    const item = document.createElement("article");
-    item.className = "risk-item";
-    item.innerHTML = `
-      <div class="status-row">
-        <div>
-          <h3 class="risk-title">${risk.title}</h3>
-          <p class="vendor-meta">${risk.owner || "Operations"} · Due in ${risk.due_in || "TBD"}</p>
-        </div>
-        <span class="risk-pill ${slugify(risk.severity)}">${risk.severity || "Info"}</span>
-      </div>
-      <div class="status-row" style="margin-top: 0.65rem;">
-        <span class="project-label">${risk.status || "Open"}</span>
-        <strong>${formatCurrency(risk.impact || 0, currency)}</strong>
-      </div>
-    `;
-    list.append(item);
-  });
-
-  card.append(list);
-  return card;
-}
-
 function createOperationsSection(report) {
-  const wrapper = document.createElement("section");
+  const wrapper = document.createElement("div");
   wrapper.className = "double-grid";
-  wrapper.id = "models";
 
   const activityCard = document.createElement("section");
   activityCard.className = "timeline-card";
@@ -621,9 +814,9 @@ function createOperationsSection(report) {
     <div class="surface-header">
       <div>
         <p class="section-kicker">Activity</p>
-        <h2 class="section-title">Live operations feed</h2>
+        <h3 class="section-title">Live operations feed</h3>
       </div>
-      <p class="section-subtitle">Recent portfolio events, approvals, and sourcing moves</p>
+      <p class="section-subtitle">Recent portfolio events, approvals, and sourcing moves.</p>
     </div>
   `;
 
@@ -651,7 +844,7 @@ function createOperationsSection(report) {
     <div class="surface-header">
       <div>
         <p class="section-kicker">Model Intelligence</p>
-        <h2 class="section-title">IFC package health</h2>
+        <h3 class="section-title">IFC package health</h3>
       </div>
       <p class="section-subtitle">${truncatePath(report.ifc_file)} · ${report.parser_used || "Parser"} · ${truncatePath(report.inventory_file)}</p>
     </div>
@@ -666,41 +859,22 @@ function createOperationsSection(report) {
     item.innerHTML = `
       <div class="status-row">
         <div>
-          <h3 class="model-name">${model.name}</h3>
+          <h4 class="model-name">${model.name}</h4>
           <p class="model-meta">${model.discipline || "Model"} · ${model.version || "IFC"}</p>
         </div>
         <span class="project-status ${slugify(model.sync_status === "Synced" ? "on track" : model.sync_status)}">${model.sync_status || "Queued"}</span>
       </div>
-      <div class="status-row" style="margin-top: 0.65rem;">
+      <div class="status-row pipeline-meta">
         <span class="project-label">${formatNumber(model.entities || 0)} entities</span>
-        <span class="project-label">${formatNumber(model.coverage || 0)}% coverage</span>
+        <span class="project-label">${formatNumber(model.coverage || 0)}% confidence</span>
       </div>
+      ${model.detail ? `<p class="vendor-meta model-detail">${model.detail}</p>` : ""}
     `;
     modelList.append(item);
   });
 
   modelCard.append(modelList);
   wrapper.append(activityCard, modelCard);
-  return wrapper;
-}
-
-function createActionsSection(report) {
-  const wrapper = document.createElement("section");
-  wrapper.id = "actions";
-  wrapper.className = "actions-grid";
-
-  (report.recommended_actions || []).forEach((action) => {
-    const card = document.createElement("article");
-    card.className = "action-card";
-    card.innerHTML = `
-      <p class="action-priority">${action.priority || "normal"} priority</p>
-      <h3>${action.action}</h3>
-      <p class="action-owner">${action.owner || "Operations desk"}</p>
-      <p class="action-impact">${action.impact || "Maintains portfolio momentum and reduces sourcing friction."}</p>
-    `;
-    wrapper.append(card);
-  });
-
   return wrapper;
 }
 
@@ -711,8 +885,16 @@ function renderShell(report) {
   const readiness = portfolio.readiness_score || overallCoverage(summary);
   const metrics = Array.isArray(report.kpis) && report.kpis.length ? report.kpis : buildMetricFallback(report);
 
-  workspaceName.textContent = portfolio.name || "Signature Portfolio";
+  workspaceName.textContent = `${portfolio.name || "Signature Portfolio"} · ${portfolio.tier || "Signature"}`;
   workspacePeriod.textContent = report.generated_at ? formatDateTime(report.generated_at) : "Latest sync";
+  footerWorkspace.textContent = portfolio.name || "Signature Portfolio";
+  if (report.dashboard_copy?.headline) {
+    footerTitle.textContent = report.dashboard_copy.headline;
+  }
+  if (report.dashboard_copy?.footer_note) {
+    footerNote.textContent = report.dashboard_copy.footer_note;
+  }
+
   heroTitle.textContent = `${portfolio.name || "IFC Portfolio"} is ${readiness}% ready for controlled procurement release.`;
   heroDescription.textContent =
     `${portfolio.program_type || "Portfolio-wide IFC material intelligence"} for ${portfolio.client || "stakeholders"} in ${portfolio.region || "active markets"}. ` +
@@ -722,7 +904,7 @@ function renderShell(report) {
   [
     portfolio.phase || "Active review",
     portfolio.owner || "Operations office",
-    `${formatCompactCurrency(portfolio.contract_value || 0, currency)} contract value`,
+    `${formatCompactCurrency(portfolio.contract_value || 0, currency)} managed spend`,
     portfolio.model_sync_status || "Fresh model sync",
   ]
     .filter(Boolean)
@@ -753,7 +935,22 @@ function renderShell(report) {
 
   briefCallout.textContent =
     `Current covered value sits at ${formatCurrency(summary.total_available_cost || 0, currency)}, while shortage exposure is ${formatCurrency(summary.total_shortage_cost || 0, currency)}. ` +
-    `Use this view to prioritize approvals, resync delayed model packages, and protect budget before release.`;
+    `Use this workspace to prioritize approvals, sequence buyout decisions, and protect budget before release.`;
+
+  sidebarStats.innerHTML = `
+    <div class="sidebar-stat">
+      <span class="sidebar-stat-label">Readiness</span>
+      <strong>${readiness}%</strong>
+    </div>
+    <div class="sidebar-stat">
+      <span class="sidebar-stat-label">Active projects</span>
+      <strong>${report.active_projects?.length || portfolio.active_projects || 0}</strong>
+    </div>
+    <div class="sidebar-stat">
+      <span class="sidebar-stat-label">Warehouses</span>
+      <strong>${portfolio.connected_warehouses || 0}</strong>
+    </div>
+  `;
 }
 
 function renderDashboard(report) {
@@ -762,15 +959,6 @@ function renderDashboard(report) {
 
   renderShell(report);
   app.innerHTML = "";
-  app.append(
-    createSpotlightSection(report, currency),
-    createProjectsSection(report, currency),
-    createMetricsSection(report),
-  );
-
-  const intelligenceRow = document.createElement("section");
-  intelligenceRow.className = "double-grid";
-  intelligenceRow.append(createVendorSection(report), createRiskSection(report, currency));
 
   const materialsLayout = document.createElement("section");
   materialsLayout.className = "materials-layout";
@@ -801,7 +989,90 @@ function renderDashboard(report) {
     ),
   );
 
-  app.append(intelligenceRow, materialsLayout, createOperationsSection(report), createActionsSection(report));
+  const supplyGrid = document.createElement("div");
+  supplyGrid.className = "triple-grid";
+  supplyGrid.append(createVendorSection(report, currency), createRiskSection(report, currency), createMilestonesSection(report));
+
+  const procurementGrid = document.createElement("div");
+  procurementGrid.className = "double-grid procurement-grid";
+  procurementGrid.append(createPipelineSection(report, currency), createActionsSection(report));
+
+  app.append(
+    createSectionGroup(
+      "portfolio",
+      "Portfolio Health",
+      "Executive readiness and delivery posture",
+      "A fast read on commercial confidence, program exposure, and site-level health.",
+      createOverviewSection(report, currency),
+      createProjectsSection(report, currency),
+    ),
+    createSectionGroup(
+      "procurement",
+      "Procurement Program",
+      "Pipeline, approvals, and action center",
+      "Grouped into subsections so the page stays readable even as the sample data gets richer.",
+      procurementGrid,
+    ),
+    createSectionGroup(
+      "supply",
+      "Supply & Risk",
+      "Supplier posture, escalations, and release milestones",
+      "Commercial bottlenecks and decision pressure points sit together instead of being scattered.",
+      supplyGrid,
+    ),
+    createSectionGroup(
+      "materials",
+      "Material Board",
+      "Operational queues by execution state",
+      "Ready, top-up, and escalation boards make the single page feel more like a product workspace.",
+      materialsLayout,
+    ),
+    createSectionGroup(
+      "intelligence",
+      "Intelligence",
+      "Activity feed and model health",
+      "Recent decisions, model freshness, and package confidence close the loop on the portfolio story.",
+      createOperationsSection(report),
+    ),
+  );
+
+  setupScrollSpy();
+}
+
+function setupScrollSpy() {
+  const links = Array.from(document.querySelectorAll(".topnav-link, .sidebar-link"));
+  if (!links.length) {
+    return;
+  }
+
+  const targets = links
+    .map((link) => document.querySelector(link.getAttribute("href")))
+    .filter(Boolean);
+
+  const setActive = (id) => {
+    links.forEach((link) => {
+      const isActive = link.getAttribute("href") === `#${id}`;
+      link.classList.toggle("active", isActive);
+    });
+  };
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+
+      if (visible?.target?.id) {
+        setActive(visible.target.id);
+      }
+    },
+    {
+      rootMargin: "-20% 0px -55% 0px",
+      threshold: [0.2, 0.4, 0.7],
+    },
+  );
+
+  targets.forEach((target) => observer.observe(target));
 }
 
 function renderError(message) {
@@ -826,6 +1097,10 @@ async function loadSampleReport() {
   }
 }
 
+themeToggle.addEventListener("click", () => {
+  toggleTheme();
+});
+
 reloadButton.addEventListener("click", () => {
   loadSampleReport();
 });
@@ -846,4 +1121,5 @@ uploadInput.addEventListener("change", async (event) => {
   }
 });
 
+initializeTheme();
 loadSampleReport();
