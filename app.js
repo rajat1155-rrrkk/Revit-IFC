@@ -162,6 +162,15 @@ function toggleTheme() {
   applyTheme(body.dataset.theme === "night" ? "day" : "night");
 }
 
+function updateNavbarState() {
+  body.classList.toggle("nav-compact", window.scrollY > 32);
+}
+
+function initializeNavbarState() {
+  updateNavbarState();
+  window.addEventListener("scroll", updateNavbarState, { passive: true });
+}
+
 function normalizeReport(report) {
   const summary = report.summary || {};
   const derivedPortfolio = {
@@ -1097,4 +1106,5 @@ uploadInput.addEventListener("change", async (event) => {
 });
 
 initializeTheme();
+initializeNavbarState();
 loadSampleReport();
