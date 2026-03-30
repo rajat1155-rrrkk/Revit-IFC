@@ -15,7 +15,6 @@ const themeToggleLabel = document.querySelector("#theme-toggle-label");
 const workspaceName = document.querySelector("#workspace-name");
 const workspacePeriod = document.querySelector("#workspace-period");
 const heroTitle = document.querySelector("#hero-title");
-const heroDescription = document.querySelector("#hero-description");
 const heroBadges = document.querySelector("#hero-badges");
 const heroTrends = document.querySelector("#hero-trends");
 const briefMeta = document.querySelector("#brief-meta");
@@ -25,7 +24,6 @@ const sidebarStats = document.querySelector("#sidebar-stats");
 const footerWorkspace = document.querySelector("#footer-workspace");
 const footerTheme = document.querySelector("#footer-theme");
 const footerTitle = document.querySelector("#footer-title");
-const footerNote = document.querySelector("#footer-note");
 
 function getCurrencyFormatter(currency) {
   if (!currencyFormatterCache.has(currency)) {
@@ -372,7 +370,7 @@ function createTag(text) {
   return tag;
 }
 
-function createSectionGroup(id, kicker, title, subtitle, ...content) {
+function createSectionGroup(id, kicker, title, ...content) {
   const section = document.createElement("section");
   section.id = id;
   section.className = "section-group";
@@ -385,7 +383,6 @@ function createSectionGroup(id, kicker, title, subtitle, ...content) {
         <p class="section-kicker">${kicker}</p>
         <h2 class="section-heading">${title}</h2>
       </div>
-      <p class="section-subtitle">${subtitle}</p>
     </div>
   `;
 
@@ -407,13 +404,12 @@ function createEmptyCard(copy) {
   return card;
 }
 
-function createSectionHeader(kicker, title, subtitle) {
+function createSectionHeader(kicker, title) {
   const header = document.createElement("div");
   header.className = "status-card";
   header.innerHTML = `
     <p class="section-kicker">${kicker}</p>
     <h3 class="section-title">${title}</h3>
-    <p class="section-subtitle">${subtitle}</p>
   `;
   return header;
 }
@@ -484,9 +480,6 @@ function createSpotlightSection(report, currency) {
     <div class="spotlight-copy">
       <p class="section-kicker">Portfolio Signal</p>
       <h2 class="spotlight-title">${readiness >= 85 ? "Release confidence is strong" : readiness >= 70 ? "Program is stable with targeted gaps" : "Commercial exposure still needs attention"}</h2>
-      <p class="section-subtitle">
-        ${portfolio.portfolio_health || "This portfolio view combines IFC material coverage, vendor posture, and model freshness into one operating signal."}
-      </p>
       <div class="mini-chart">
         ${createMiniChartMarkup(report.trends?.weekly_readiness || [], "score", currency)}
       </div>
@@ -557,7 +550,6 @@ function createPipelineSection(report, currency) {
         <p class="section-kicker">Procurement Program</p>
         <h3 class="section-title">Release pipeline</h3>
       </div>
-      <p class="section-subtitle">Grouped by commercial readiness so decisions are easier to scan.</p>
     </div>
   `;
 
@@ -620,7 +612,7 @@ function createVendorSection(report, currency) {
         <p class="section-kicker">Supplier Health</p>
         <h3 class="section-title">Managed sourcing network</h3>
       </div>
-      <p class="section-subtitle">${onTimeRate}% average fulfillment confidence across active vendors</p>
+      <p class="section-subtitle">${onTimeRate}%</p>
     </div>
     <div class="status-card inline-summary">
       <div class="status-row">
@@ -671,7 +663,7 @@ function createRiskSection(report, currency) {
         <p class="section-kicker">Risk Register</p>
         <h3 class="section-title">Escalations and blockers</h3>
       </div>
-      <p class="section-subtitle">${risks.length} tracked items still require explicit ownership.</p>
+      <p class="section-subtitle">${risks.length} open</p>
     </div>
   `;
 
@@ -711,7 +703,6 @@ function createMilestonesSection(report) {
         <p class="section-kicker">Milestones</p>
         <h3 class="section-title">Upcoming release moments</h3>
       </div>
-      <p class="section-subtitle">Important dates that shape sourcing urgency and model freeze decisions.</p>
     </div>
   `;
 
@@ -784,10 +775,10 @@ function createMaterialCard(row, status, currency, vendorMap) {
   return fragment.querySelector(".material-card");
 }
 
-function createMaterialSection(title, subtitle, rows, status, currency, vendorMap) {
+function createMaterialSection(title, rows, status, currency, vendorMap) {
   const column = document.createElement("section");
   column.className = "materials-column";
-  column.append(createSectionHeader(status, title, subtitle));
+  column.append(createSectionHeader(status, title));
 
   const grid = document.createElement("div");
   grid.className = "materials-grid";
@@ -816,7 +807,6 @@ function createOperationsSection(report) {
         <p class="section-kicker">Activity</p>
         <h3 class="section-title">Live operations feed</h3>
       </div>
-      <p class="section-subtitle">Recent portfolio events, approvals, and sourcing moves.</p>
     </div>
   `;
 
@@ -846,7 +836,7 @@ function createOperationsSection(report) {
         <p class="section-kicker">Model Intelligence</p>
         <h3 class="section-title">IFC package health</h3>
       </div>
-      <p class="section-subtitle">${truncatePath(report.ifc_file)} · ${report.parser_used || "Parser"} · ${truncatePath(report.inventory_file)}</p>
+      <p class="section-subtitle">${truncatePath(report.ifc_file)}</p>
     </div>
   `;
 
@@ -891,14 +881,8 @@ function renderShell(report) {
   if (report.dashboard_copy?.headline) {
     footerTitle.textContent = report.dashboard_copy.headline;
   }
-  if (report.dashboard_copy?.footer_note) {
-    footerNote.textContent = report.dashboard_copy.footer_note;
-  }
 
   heroTitle.textContent = `${portfolio.name || "IFC Portfolio"} is ${readiness}% ready for controlled procurement release.`;
-  heroDescription.textContent =
-    `${portfolio.program_type || "Portfolio-wide IFC material intelligence"} for ${portfolio.client || "stakeholders"} in ${portfolio.region || "active markets"}. ` +
-    `${portfolio.portfolio_health || "Coverage and supplier signals are consolidated into one command surface."}`;
 
   heroBadges.innerHTML = "";
   [
@@ -934,8 +918,7 @@ function renderShell(report) {
   });
 
   briefCallout.textContent =
-    `Current covered value sits at ${formatCurrency(summary.total_available_cost || 0, currency)}, while shortage exposure is ${formatCurrency(summary.total_shortage_cost || 0, currency)}. ` +
-    `Use this workspace to prioritize approvals, sequence buyout decisions, and protect budget before release.`;
+    "";
 
   sidebarStats.innerHTML = `
     <div class="sidebar-stat">
@@ -965,7 +948,6 @@ function renderDashboard(report) {
   materialsLayout.append(
     createMaterialSection(
       "Execution ready",
-      "Approved stock and supplier coverage already protect these materials.",
       report.available_materials || [],
       "Available",
       currency,
@@ -973,7 +955,6 @@ function renderDashboard(report) {
     ),
     createMaterialSection(
       "Needs top-up",
-      "These packages are close to release, but still need supplemental cover.",
       report.partial_materials || [],
       "Partial",
       currency,
@@ -981,7 +962,6 @@ function renderDashboard(report) {
     ),
     createMaterialSection(
       "Escalation queue",
-      "These items are the fastest path to explain procurement risk and delay exposure.",
       report.unavailable_materials || [],
       "Unavailable",
       currency,
@@ -1002,7 +982,6 @@ function renderDashboard(report) {
       "portfolio",
       "Portfolio Health",
       "Executive readiness and delivery posture",
-      "A fast read on commercial confidence, program exposure, and site-level health.",
       createOverviewSection(report, currency),
       createProjectsSection(report, currency),
     ),
@@ -1010,28 +989,24 @@ function renderDashboard(report) {
       "procurement",
       "Procurement Program",
       "Pipeline, approvals, and action center",
-      "Grouped into subsections so the page stays readable even as the sample data gets richer.",
       procurementGrid,
     ),
     createSectionGroup(
       "supply",
       "Supply & Risk",
       "Supplier posture, escalations, and release milestones",
-      "Commercial bottlenecks and decision pressure points sit together instead of being scattered.",
       supplyGrid,
     ),
     createSectionGroup(
       "materials",
       "Material Board",
       "Operational queues by execution state",
-      "Ready, top-up, and escalation boards make the single page feel more like a product workspace.",
       materialsLayout,
     ),
     createSectionGroup(
       "intelligence",
       "Intelligence",
       "Activity feed and model health",
-      "Recent decisions, model freshness, and package confidence close the loop on the portfolio story.",
       createOperationsSection(report),
     ),
   );
